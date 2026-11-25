@@ -1,0 +1,11 @@
+[workspace]
+name = "duckdb"
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-aarch64"]
+
+[dependencies]
+duckdb-cli = "*"
+
+[tasks]
+demo = { description = "aggregate 5 million rows", cmd = """duckdb -c "SELECT n % 7 AS bucket, count(*) AS rows, round(avg(sqrt(n)), 2) AS avg_sqrt FROM range(1, 5000001) t(n) GROUP BY ALL ORDER BY bucket" """ }
+sql = { cmd = "duckdb", description = "interactive DuckDB shell (.exit to quit)" }

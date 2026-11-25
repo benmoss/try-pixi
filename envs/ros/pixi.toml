@@ -1,0 +1,23 @@
+[workspace]
+name = "ros"
+channels = ["https://prefix.dev/robostack-jazzy", "https://prefix.dev/conda-forge"]
+platforms = ["linux-aarch64"]
+
+[dependencies]
+ros-jazzy-ros-core = "*"
+ros-jazzy-demo-nodes-cpp = "*"
+ros-jazzy-turtlesim = "*"
+
+[activation.env]
+ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
+# No display server in the VM: Qt serves its window over VNC, which the page draws.
+QT_QPA_PLATFORM = "vnc:size=500x500"
+XDG_RUNTIME_DIR = "/tmp"
+
+[tasks]
+turtlesim = { cmd = "ros2 run turtlesim turtlesim_node", description = "the turtlesim window (started for you)" }
+teleop = { cmd = "ros2 run turtlesim turtle_teleop_key", description = "drive turtle1 with the arrow keys" }
+square = { cmd = "ros2 run turtlesim draw_square", description = "drive turtle1 in a square" }
+spawn = { cmd = "ros2 service call /spawn turtlesim/srv/Spawn \"{x: 2.0, y: 2.0, theta: 0.0, name: 'turtle2'}\"", description = "add turtle2" }
+talker = { cmd = "ros2 run demo_nodes_cpp talker", description = "publish on /chatter" }
+listener = { cmd = "ros2 run demo_nodes_cpp listener", description = "subscribe to /chatter" }

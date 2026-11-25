@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>try pixi</title>
+  <meta name="description" content="conda-forge in your browser: a real Linux VM in WebAssembly, with pixi installing packages inside it. CLI tools, Python, DuckDB, even ROS 2. No server, no install.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://try-pixi.fly.dev/">
+  <meta property="og:title" content="try pixi: conda-forge in your browser">
+  <meta property="og:description" content="A real Linux VM in WebAssembly, with pixi installing packages inside it. CLI tools, Python, DuckDB, even ROS 2. No server, no install.">
+  <meta property="og:image" content="https://try-pixi.fly.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="try pixi: a terminal installing conda-forge packages and running a DuckDB query, with ROS 2 turtlesim inset">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="try pixi: conda-forge in your browser">
+  <meta name="twitter:description" content="A real Linux VM in WebAssembly, with pixi installing packages inside it. CLI tools, Python, DuckDB, even ROS 2. No server, no install.">
+  <meta name="twitter:image" content="https://try-pixi.fly.dev/og.png">
+  <style>
+    :root { --bg: #0f1115; --panel: #161920; --line: #22262e; --fg: #e6e6e6; --muted: #8a8f98; --accent: #f5c542; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.4 ui-sans-serif, system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; }
+    header { display: flex; gap: 12px; align-items: baseline; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+    header b { color: var(--accent); }
+    header .sub { color: var(--muted); }
+    #status { color: var(--muted); font: 12px ui-monospace, monospace; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .picker { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+    .picker select { font: 12px ui-monospace, monospace; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+    @media (max-width: 700px) { header .sub { display: none; } }
+    .share { position: relative; flex: none; }
+    .share > button { font: 600 12px ui-sans-serif, system-ui, sans-serif; color: var(--bg); background: var(--accent); border: 0; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+    .share > button:hover { filter: brightness(1.1); }
+    .share-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 10; min-width: 170px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    .share-menu[hidden] { display: none; }
+    .share-menu a, .share-menu button { display: block; width: 100%; text-align: left; font: 13px ui-sans-serif, system-ui, sans-serif; color: var(--fg); background: none; border: 0; border-radius: 5px; padding: 7px 10px; cursor: pointer; text-decoration: none; }
+    .share-menu a:hover, .share-menu button:hover { background: #22262e; }
+    main { flex: 1; min-height: 0; display: flex; }
+    #term { flex: 1; min-width: 0; padding: 8px 0 0 8px; }
+    #side { width: 520px; border-left: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; }
+    #side[hidden] { display: none; }
+    #side h2 { margin: 0; padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    #screen { width: 500px; height: 500px; margin: 0 10px; background: #000; }
+    /* Qt's VNC server sends BGR whatever pixel format noVNC asks for: swap red and blue back. */
+    #screen canvas { filter: url(#swap-rb); }
+    #screen.waiting { display: grid; place-items: center; color: var(--muted); font: 12px ui-monospace, monospace; }
+    #side ul { margin: 12px 14px; padding-left: 18px; color: var(--muted); font-size: 13px; }
+    #side code { color: var(--fg); background: #0f1115; padding: 1px 5px; border-radius: 4px; }
+    @media (max-width: 900px) { main { flex-direction: column; } #side { width: auto; border-left: 0; border-top: 1px solid var(--line); } #screen { width: 100%; max-width: 500px; } }
+  </style>
+</head>
+<body>
+  <header><b>try pixi</b><span class="sub">conda-forge &amp; RoboStack on Linux, in your browser</span>
+    <label class="picker"><span>project</span><select id="project"></select></label><span id="status">starting…</span>
+    <div class="share">
+      <button id="share" type="button" aria-haspopup="menu" aria-expanded="false">Share</button>
+      <div id="share-menu" class="share-menu" role="menu" hidden>
+        <button id="share-copy" type="button" role="menuitem">Copy link</button>
+        <a id="share-x" role="menuitem" target="_blank" rel="noopener">Post on X</a>
+        <a id="share-bsky" role="menuitem" target="_blank" rel="noopener">Post on Bluesky</a>
+        <a id="share-li" role="menuitem" target="_blank" rel="noopener">Share on LinkedIn</a>
+      </div>
+    </div></header>
+  <main>
+    <div id="term"></div>
+    <aside id="side" hidden>
+      <h2>turtlesim · Qt over VNC on the guest's :5900</h2>
+      <div id="screen" class="waiting">waiting for turtlesim…</div>
+      <ul>
+        <li><code>pixi run teleop</code>: drive with the arrow keys</li>
+        <li><code>pixi run square</code>: draw a square</li>
+        <li><code>pixi run spawn</code>: add turtle2</li>
+        <li><code>ros2 topic echo /turtle1/pose</code></li>
+      </ul>
+    </aside>
+  </main>
+  <svg width="0" height="0" style="position:absolute"><filter id="swap-rb" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 1 0 0  0 1 0 0 0  1 0 0 0 0  0 0 0 1 0"/></filter></svg>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

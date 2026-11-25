@@ -1,0 +1,13 @@
+[workspace]
+name = "python"
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-aarch64"]
+
+[dependencies]
+python = "3.13.*"
+rich = "*"
+numpy = "*"
+
+[tasks]
+demo = { description = "a numpy table, printed with rich", cmd = """python -c "import numpy as np, rich; from rich.table import Table; t = Table(title='numpy on conda-forge, in a browser tab'); [t.add_column(c) for c in ('n', 'mean', 'std')]; [t.add_row(str(n), f'{(a:=np.random.default_rng(0).normal(size=n)).mean():+.4f}', f'{a.std():.4f}') for n in (10, 1000, 100000)]; rich.print(t)" """ }
+repl = { cmd = "python", description = "a Python 3.13 REPL with numpy and rich" }

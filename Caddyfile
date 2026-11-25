@@ -1,0 +1,13 @@
+:8080 {
+	root * /srv
+	# Pre-compressed .zst/.gz siblings (bin/pixi, wasm, js) are made at build time.
+	# distros/*.erofs has none: it is read with Range requests.
+	file_server {
+		precompressed zstd gzip
+	}
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+	header /bin/* Cache-Control "public, max-age=86400"
+	header /distros/* Cache-Control "public, max-age=86400"
+	header /projects/* Cache-Control "no-cache"
+	log
+}

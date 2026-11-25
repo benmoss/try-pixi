@@ -1,0 +1,6 @@
+node_modules/
+vendor/
+envs/*/.pixi/
+public/bin/pixi
+public/distros/
+dist/

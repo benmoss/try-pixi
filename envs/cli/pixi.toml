@@ -1,0 +1,19 @@
+[workspace]
+name = "cli"
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-aarch64"]
+
+[dependencies]
+ripgrep = "*"
+fd-find = "*"
+bat = "*"
+eza = "*"
+jq = "*"
+btop = "*"
+fastfetch = "*"
+hyperfine = "*"
+
+[tasks]
+tour = { cmd = "fastfetch && eza -la --icons=never ~ && bat --paging=never --style=numbers pixi.toml", description = "fastfetch, eza and bat, one after another" }
+bench = { cmd = "hyperfine --warmup 2 'rg -c conda pixi.lock' 'grep -c conda pixi.lock'", description = "hyperfine: ripgrep vs grep on pixi.lock" }
+top = { cmd = "btop", description = "btop: watch the VM (q to quit)" }
